@@ -1,0 +1,93 @@
+hf = figure('color','white');
+axis equal
+grid on
+% axis([-2 1.5 -2 1.5]);
+
+% set(gcf, 'Position', get(0,'ScreenSize'));
+set(gcf, 'Position', [000 200 1000 600]);
+
+% x1 = [x(1)-l_cube/2 x(1)-l_cube/2 x(1)+l_cube/2 x(1)+l_cube/2 x(1)-l_cube/2];
+% z1 = [z(1)+l_cube/2 z(1)-l_cube/2 z(1)-l_cube/2 z(1)+l_cube/2 z(1)+l_cube/2];
+% ht = line('XData',x1,'YData',z1);
+% set(ht,'XDataSource','x1')
+% set(ht,'YDataSource','z1')
+
+MUL = 1;
+for i = 1:MUL:n_hand
+
+    scatter(0,0,30,'r','linewidth',2); % robot origin
+
+    axis([-1.2 1. -0.5 1.1]); axis equal; grid on;
+    
+    hold on
+    
+    circle(0,0,r,'k','-.'); % workspace circle
+%     circle(0,0,r_inner);
+    
+    % intersection point with workspace
+%     scatter(x_inter,z_inter,100,'k+','linewidth',2); 
+%     line([x_inter x_inter+v_inter(1)*l_cube/norm(v_inter)]...
+%         ,[z_inter z_inter+v_inter(2)*l_cube/norm(v_inter)], 'color','r')
+%     
+    % draw object cube
+%     plot(x(1:i),z(1:i),'-','color',[.6 .6 .6]); % object traj
+%     
+%     rm = q(i).RotationMatrix;
+%     TR =  rm * [l_cube/2; 0; l_cube/2]; % top-right conner location
+% 
+%     x1 = [x(i)-TR(3) x(i)-TR(1) x(i)+TR(3) x(i)+TR(1) x(i)-TR(3)];
+%     z1 = [z(i)+TR(1) z(i)-TR(3) z(i)-TR(1) z(i)+TR(3) z(i)+TR(1)];
+% 
+%     line('XData',x1,'YData',z1, 'color','b');
+%     
+%     z_vec = rm*[0;0;l_cube*0.4]; % z axis
+%     line([x(i) x(i)+z_vec(1)],[z(i) z(i)+z_vec(3)]);
+%     x_vec = rm*[l_cube*0.4;0;0]; % x axis
+%     line([x(i) x(i)+x_vec(1)],[z(i) z(i)+x_vec(3)],'color','r');
+%     
+%     scatter(x(i),z(i),30,'b','linewidth',2); % object center
+%     circle(x(i),z(i), r_cube, 'k','--');
+%     
+
+    % draw hand traj
+    plot(x, z, 'g');
+    % draw hand
+    if (i <= n_hand) % contact point on the hand
+        scatter(p_hand(1,1,i),p_hand(1,2,i),15 ,'r','linewidth',1.5);
+    end
+    
+    rm = q_hand(i).RotationMatrix;
+    TR_h = rm * [l_hand/2; 0; 0]; % top-right conner location
+    BR_h = rm * [l_hand/2; 0; -h_hand]; % bottom-right conner location
+    BL_h = rm * [-l_hand/2; 0; -h_hand]; % bottom-left conner location
+    
+    xcc = p_hand(1,1,i); zcc = p_hand(1,2,i);
+    x1 = [xcc-TR_h(1) xcc+BL_h(1) xcc+BR_h(1) xcc+TR_h(1) xcc-TR_h(1)];
+    z1 = [zcc-TR_h(3) zcc+BL_h(3) zcc+BR_h(3) zcc+TR_h(3) zcc-TR_h(3)];
+
+    line('XData',x1,'YData',z1, 'color','b');
+    
+    % draw 2R robot arm
+    [theta1, theta2] = TwoR_InvKin(p_hand(1,1,i), p_hand(1,2,i), l_robot, xc);
+    elbow = [-l_robot*sin(theta1) l_robot*cos(theta1)];
+    
+    xr = [xc elbow(1) p_hand(1,1,i)];
+    zr = [zc elbow(2) p_hand(1,2,i)];
+    
+    line(xr,zr, 'color','k','linewidth',2);
+    
+%     ht = line('XData',x1,'YData',z1, 'color','b');
+%     refreshdata(hf,'caller')
+
+    hold off
+    drawnow
+%     pause(t_int)
+% pause();
+    if (i == 1)
+%         pause();
+    end
+    
+   
+end
+
+disp(['total cycle# = ' num2str(i) ', Time = ' num2str(i*t_int) ' sec']);
